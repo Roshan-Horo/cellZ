@@ -14,6 +14,7 @@ app.get('/',(req,res) => {
     //res.sendFile(__dirname + '/index.html')
     res.send('Hello')
 })
+console.log('deploying')
 app.listen(HTML_PORT,() => console.log("Listening on http port 8081"))
 
 // web socket
