@@ -11,7 +11,8 @@ const HTML_PORT = process.env.HTML_PORT || 8081
 
 // serving html page
 app.get('/',(req,res) => {
-    res.sendFile(__dirname + '/index.html')
+    //res.sendFile(__dirname + '/index.html')
+    res.send('Hello')
 })
 app.listen(HTML_PORT,() => console.log("Listening on http port 8081"))
 
