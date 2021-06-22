@@ -1,11 +1,19 @@
 // server web page
 const http = require('http')
 const app = require('express')()
+const dotenv = require('dotenv')
 
+dotenv.config()
+
+// PORTS 
+const PORT = process.env.PORT || 8000
+const HTML_PORT = process.env.HTML_PORT || 8081
+
+// serving html page
 app.get('/',(req,res) => {
     res.sendFile(__dirname + '/index.html')
 })
-app.listen(8081,() => console.log("Listening on http port 8081"))
+app.listen(HTML_PORT,() => console.log("Listening on http port 8081"))
 
 // web socket
 const WebSocketServer = require('websocket').server;
@@ -16,7 +24,7 @@ const httpServer = http.createServer((req,res) => {
     res.end()
 })
 
-httpServer.listen(8080,() => console.log("WEB SOCKET SERVER listening on PORT 8080"))
+httpServer.listen(PORT,() => console.log("WEB SOCKET SERVER listening on PORT 8080"))
 
 wsServer = new WebSocketServer({
     httpServer: httpServer
