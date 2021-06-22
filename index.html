@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <style>
+      *{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    /* outline: 1px solid magenta; */
+}
+
+:root{
+    --body-font: 'Poppins', sans-serif;
+    --big-font-size: 2rem;
+    --h2-font-size: 1.25rem;
+    --normal-font-size: 0.938rem;
+  }
+
+:root{
+    --shadow: 0 1px 4px rgba(146,161,176,.15);
+}
+
+/*=========
+  commom to all
+============ */
+
+a, a:hover, a:focus, a:active {
+    text-decoration: none;
+    color: #efefef;
+}
+
+/*=========
+  FullScreen
+============ */
+
+.container:fullscreen{
+    background-color: #fff;
+}
+
+*:fullscreen, *:-webkit-full-screen, *:-moz-full-screen {
+    background-color: rgba(255,255,255,0);
+}
+
+body{
+    font-family: sans-serif;
+}
+
+.container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 95%;
+    height: 100vh;
+    margin: 0 auto;
+}
+
+.logo{
+    text-align: center;
+    font-size: 2rem;
+}
+
+.logo-z{
+    font-size: 2.5rem;
+    color: red;
+}
+
+.center-div{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem;
+    gap: 1rem;
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+    box-shadow: var(--shadow);
+}
+
+input{
+    padding: 0.5rem;
+}
+
+.btn{
+    padding: 1rem 1.5rem;
+    background-color: rgba(0,200,0,1);
+    border-radius: 5px;
+    font-weight: 500;
+    outline: 0;
+    color: #d4d4d4;
+}
+
+#gamePage{
+    width: 95%;
+    height: 100vh;
+    padding: 0.5rem;
+    margin: 0 auto;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#game-head{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.colorBox{
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+}
+
+#divBoard{
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+    box-shadow: var(--shadow);
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.cell{
+    border: 1px solid black;
+    border-radius: 5px;
+    width: 50px;
+    height: 50px;
+}
+
+    </style>
+</head>
+<body>
+    <div id="firstPage" class="container">
+        <h2 class="logo">Cell<span class="logo-z">Z</span></h2>
+        <div class="center-div" id="home">
+            <div class="center-div">
+            <input type="text" id="txtGameId" placeholder="Game Id">
+            <button class="btn" id="btnJoin">Join Game</button>
+            </div>
+            <div class="center-div">
+            <input type="number" id="numCell" placeholder="No. of Cells">
+            <button class="btn" id="btnCreate">Create Game</button>
+            <button  onclick="toggleFullscreen()">Full Screen</button>
+          </div>
+          </div>
+        <div id="lobby" class="center-div">
+          <div id="game"><span>Game Id : </span><span id="showId"></span></div>
+          <div id="divPlayers"></div>
+          <button class="btn" id="btnStart">Start Game</button>
+
+        </div>
+    </div>
+    <div id="gamePage">
+      <div id="game-head">
+        <div>Me <span id="ownColor" class="colorBox"></span></div>
+        <div class="logo">Cell<span class="logo-z">Z</span></div>
+        <div>Time : <span class="time">30</span></div>
+      </div>
+      <div id="divBoard" >
+     
+      </div>
+    </div>
+    <div id="resultPage" class="container">
+      <div id="game-head">
+        <div>Me <span id="OwnColor" class="colorBox"></span></div>
+        <div class="logo">Cell<span class="logo-z">Z</span></div>
+        <div>Time : <span id="timeCount" class="time">0</span></div>
+      </div>
+      
+      <div class="center-div">
+        <h2 id="winPlayer"><span id="winColor" class="colorBox" ></span> wins</h2>
+        <div id="stats">
+    
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // DISPLAY NONE 
+      const lobby = document.getElementById('lobby')
+      const divBoard = document.getElementById('divBoard')
+      const gamePage = document.getElementById('gamePage')
+      const firstPage = document.getElementById('firstPage')
+      const ownColor = document.getElementById('ownColor')
+      const OwnColor = document.getElementById('OwnColor')
+      const winColor = document.getElementById('winColor')
+      const resultPage = document.getElementById('resultPage')
+
+      lobby.style.display = 'none'
+      gamePage.style.display = 'none'
+      resultPage.style.display = 'none'
+
+        // SCREEN ORIENTATION
+        screen.orientation.lock('landscape')
+        function toggleFullscreen() {
+        let elem = document.getElementById('firstPage');
+
+        if (!document.fullscreenElement) {
+          elem.requestFullscreen().catch(err => {
+            alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+          });
+        } else {
+          document.exitFullscreen();
+        }
+      }
+
+      // Variables
+      let clientId = null;
+      let gameId = null;
+      let cells = null;
+      let playerColor = null;
+      let ws = new WebSocket("ws://192.168.178.23:8080")
+ 
+      // HTML Elements
+        const btnCreate = document.getElementById('btnCreate')
+        const btnJoin = document.getElementById('btnJoin')
+        const txtGameId = document.getElementById('txtGameId')
+        const divPlayers = document.getElementById('divPlayers')
+        const numCell = document.getElementById('numCell')
+        const home = document.getElementById('home')
+        const showId = document.getElementById('showId')
+        const btnStart = document.getElementById('btnStart')
+        const stats = document.getElementById('stats')
+        const winPlayer = document.getElementById('winPlayer')
+        btnStart.style.display = 'none'
+      // ====== Wiring Events
+
+      // create game
+      btnCreate.addEventListener('click',(e) => {
+
+      if(cells === null)
+        cells = numCell.value
+
+      if(cells >= 2){
+        const payload = {
+        "method": "create",
+        "cells": cells,
+        "clientId": clientId,
+        "admin": clientId
+      }
+
+      ws.send(JSON.stringify(payload))
+      }
+      
+
+      })
+
+      // Join game
+      btnJoin.addEventListener('click',(e) => {
+        if(gameId === null)
+          gameId = txtGameId.value
+
+        const payload = {
+          "method": "join",
+          "gameId": gameId,
+          "clientId": clientId
+        }
+
+        ws.send(JSON.stringify(payload))
+
+        
+      })
+
+      // start game
+      btnStart.addEventListener('click',(e) => {
+        const payload = {
+          "method": "start",
+          "gameId": gameId
+        }
+        ws.send(JSON.stringify(payload))
+      })
+
+      // FUNCTIONS
+
+      function adminJoin(){
+        const payload = {
+          "method": "join",
+          "gameId": gameId,
+          "clientId": clientId 
+        }
+        ws.send(JSON.stringify(payload))
+      }
+
+      
+
+      
+
+
+      
+
+      // msg from server
+      ws.onmessage = (message) => {
+        // message.data
+        response = JSON.parse(message.data)
+
+        // connect
+        if(response.method === 'connect'){
+          clientId = response.clientId
+          console.log('client Id set successfully - ',clientId)
+        }
+
+        // create
+        if(response.method === 'create'){
+          console.log('Game created successfully - '+response.game.id+' with'+response.game.cells+ ' cells')
+          gameId = response.game.id
+
+          home.style.display = 'none'
+          showId.textContent = gameId
+          lobby.style.display = 'block'
+
+          adminJoin()
+
+        }
+
+        // join
+        if(response.method === 'join'){
+          gameId = response.game.id
+          console.log('gameId : ',gameId)
+          let game = response.game
+          while(divPlayers.firstChild)
+              divPlayers.removeChild(divPlayers.firstChild)
+          
+          if(game.admin === clientId) 
+            btnStart.style.display = 'block';
+          
+          home.style.display = 'none'
+          showId.textContent = gameId
+          lobby.style.display = 'block'
+
+          game.clients.forEach(c => {
+
+            const d = document.createElement('div')
+            d.style.width = "200px";
+            d.style.background = c.color
+            d.style.padding = "0.5rem 1rem"
+            d.textContent = c.clientId
+
+            divPlayers.appendChild(d)
+            divPlayers.style.display = 'block'
+
+            if(c.clientId === clientId) playerColor = c.color;
+          })
+
+        }
+
+          //start
+          if(response.method === 'start'){
+            const game = response.game
+
+            firstPage.style.display = 'none'
+            ownColor.style.background = playerColor
+            gamePage.style.display = 'block'
+
+            while(divBoard.firstChild)
+                divBoard.removeChild(divBoard.firstChild)
+
+            for(let i = 0;i < game.cells;i++){
+              const b = document.createElement('button')
+              b.id = "cell" + (i+1);
+              b.tag = i+1;
+              b.textContent = i+1;
+              b.classList.add('cell')
+              
+              b.addEventListener('click', (e) => {
+                b.style.background = playerColor
+                
+                const payload = {
+                  "method": "play",
+                  "clientId": clientId,
+                  "gameId": gameId,
+                  "cellId": b.tag,
+                  "color": playerColor
+                }
+                ws.send(JSON.stringify(payload))
+              })
+              divBoard.appendChild(b)
+            } // end of for loop
+          }
+            
+          // update
+          if(response.method === 'update'){
+             if(!response.game.state) return;
+
+             for(const b of Object.keys(response.game.state)){
+               const color = response.game.state[b];
+               const cellObject = document.getElementById('cell'+b)
+               cellObject.style.background = color
+             }
+          }
+
+          // result
+          if(response.method === 'result'){
+            console.log(`winner - ${response.winner} with ${response.playerCell}`)
+            gamePage.style.display = 'none'
+            OwnColor.style.background = playerColor
+            winColor.style.background = response.winner
+            if(playerColor === response.winner)
+                winPlayer.textContent = "You win,Let's go baby :)";
+            if(response.winner === 'Draw'){
+              winColor.style.background = 'grey'
+              winPlayer.textContent = 'Draw :('
+            }
+                
+            
+            let playerCell = response.playerCell
+
+            for(let g of Object.keys(playerCell)){
+              let d = document.createElement('div')
+              
+              d.textContent = `${g} - ${playerCell[g]}`
+
+              stats.appendChild(d)
+            }
+            
+            resultPage.style.display = 'block'
+            
+          }
+          
+
+          
+      } // onMessage
+
+      
+      
+
+    </script>
+</body>
+</html>
