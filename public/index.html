@@ -216,7 +216,8 @@ input{
       let gameId = null;
       let cells = null;
       let playerColor = null;
-      let ws = new WebSocket()
+      let HOST = location.origin.replace(/^http/,'ws')
+      let ws = new WebSocket(HOST)
       
       // HTML Elements
         const btnCreate = document.getElementById('btnCreate')

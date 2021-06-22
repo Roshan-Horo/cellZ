@@ -1,42 +1,43 @@
 // server web page
-const http = require('http')
 const express = require('express')
 const app = express()
 const path = require('path')
 const dotenv = require('dotenv')
 
 dotenv.config()
-
-
-
 // PORTS 
 const PORT = process.env.PORT || 8000
-const HTML_PORT = process.env.HTML_PORT || 8081
+
+const http = require('http').Server(app)
+
+// web socket
+const WebSocketServer = require('websocket').server;
+
+
+wsServer = new WebSocketServer({
+    httpServer: http
+    // httpServer is now web socket server
+})
+
+
 //static files
 app.use(express.static('public'))
 
 // serving html page
 app.get('/',(req,res) => {
-    res.sendFile('/public/index.html')
+    res.sendFile(__dirname + 'index.html')
 })
 console.log('deploying')
-app.listen(HTML_PORT,() => console.log("Listening on http port 8081"))
+http.listen(PORT,() => console.log(`Listening on port ${PORT}`))
 
-// web socket
-const WebSocketServer = require('websocket').server;
 
-const httpServer = http.createServer((req,res) => {
-    console.log((new Date()) + 'Received request for ' + req.url)
-    res.writeHead(404);
-    res.end()
-})
+// const httpServer = http.createServer((req,res) => {
+//     console.log((new Date()) + 'Received request for ' + req.url)
+//     res.writeHead(404);
+//     res.end()
+// })
 
-httpServer.listen(PORT,() => console.log("WEB SOCKET SERVER listening on PORT 8080"))
 
-wsServer = new WebSocketServer({
-    httpServer: httpServer
-    // httpServer is now web socket server
-})
 
 //hashmap
 let clients = {}
