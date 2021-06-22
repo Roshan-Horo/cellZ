@@ -1,18 +1,23 @@
 // server web page
 const http = require('http')
-const app = require('express')()
+const express = require('express')
+const app = express()
+const path = require('path')
 const dotenv = require('dotenv')
 
 dotenv.config()
 
+
+
 // PORTS 
 const PORT = process.env.PORT || 8000
 const HTML_PORT = process.env.HTML_PORT || 8081
+//static files
+app.use(express.static('public'))
 
 // serving html page
 app.get('/',(req,res) => {
-    //res.sendFile(__dirname + '/index.html')
-    res.send('Hello')
+    res.sendFile('/public/index.html')
 })
 console.log('deploying')
 app.listen(HTML_PORT,() => console.log("Listening on http port 8081"))
