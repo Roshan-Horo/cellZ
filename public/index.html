@@ -134,6 +134,54 @@ input{
     height: 50px;
 }
 
+
+/* ===========
+ MEDIA QUERY
+============== */
+@media (min-width: 500px){
+  #divBoard{
+    grid-template-columns: repeat(6,1fr);
+  }
+}
+
+@media (min-width: 600px){
+ 
+  .cell{
+    width: 60px;
+    height: 60px;
+  }
+}
+
+@media (min-width: 768px){
+  #divBoard{
+    grid-template-columns: repeat(8,1fr);
+  }
+  .cell{
+    width: 75px;
+    height: 75px;
+  }
+}
+
+@media (min-width: 1200px){
+  #divBoard{
+    grid-template-columns: repeat(10,1fr);
+  }
+  .cell{
+    width: 75px;
+    height: 75px;
+  }
+}
+
+@media (min-width: 1400px){
+  #divBoard{
+    grid-template-columns: repeat(12,1fr);
+  }
+  .cell{
+    width: 75px;
+    height: 75px;
+  }
+}
+
     </style>
 </head>
 <body>
